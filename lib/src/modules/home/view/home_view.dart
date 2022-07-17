@@ -1,62 +1,50 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:study_flutter_mvvm/src/modules/home/controller/home_controller.dart';
+import 'package:study_flutter_mvvm/src/core/state/state.dart';
+import 'package:study_flutter_mvvm/src/modules/home/view_model/users_view_model.dart';
 
-class HomePage extends StatelessWidget {
-  HomePage({Key? key}) : super(key: key);
-
-  final TextEditingController _heightController = TextEditingController();
-  final TextEditingController _weightController = TextEditingController();
+class HomeView extends StatelessWidget {
+  const HomeView({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final viewModel = context.watch<UsersViewModel>();
+
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        title: const Text('Users'),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _heightController,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: 'Height',
-              ),
-            ),
-            const SizedBox(height: 12.0),
-            TextField(
-              controller: _weightController,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: 'Weight',
-              ),
-            ),
-            const SizedBox(height: 24.0),
-            Consumer<HomeController>(
-              builder: (_, value, __) {
-                return ElevatedButton(
-                  onPressed: () {
-                    value.calculateImc(
-                      height: _heightController.text,
-                      weight: _weightController.text,
-                    );
-                  },
-                  child: const Text('Calcular'),
-                );
-              },
-            ),
-            const SizedBox(height: 48.0),
-            Consumer<HomeController>(
-              builder: (_, value, __) {
-                return Text(
-                  value.imcRange,
-                  style: const TextStyle(
-                    fontSize: 24.0,
-                  ),
-                );
-              },
-            )
-          ],
+        child: Builder(
+          builder: (_) {
+            if (viewModel.state == EState.loading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            if (viewModel.state == EState.error) {
+              return Text(viewModel.error!.errorMessage);
+            }
+
+            if (viewModel.state == EState.finished) {
+              final users = viewModel.users;
+
+              return ListView.separated(
+                itemBuilder: (_, index) {
+                  return ListTile(
+                    title: Text(users[index].name),
+                    subtitle: Text(users[index].email),
+                  );
+                },
+                separatorBuilder: (_, __) {
+                  return const Divider();
+                },
+                itemCount: viewModel.users.length,
+              );
+            }
+
+            return const SizedBox();
+          },
         ),
       ),
     );
