@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:study_flutter_mvvm/src/modules/home/controller/home_controller.dart';
 import 'package:study_flutter_mvvm/src/modules/home/presentation/home_page.dart';
 
 class AppWidget extends StatelessWidget {
@@ -12,7 +14,10 @@ class AppWidget extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const HomePage(),
+      home: ChangeNotifierProvider<HomeController>(
+        create: (context) => HomeController(),
+        child: HomePage(),
+      ),
     );
   }
 }
